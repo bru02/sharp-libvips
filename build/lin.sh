@@ -21,7 +21,9 @@ case ${PLATFORM} in
     ;;
 esac
 
+rm -rf ${DEPS}
 mkdir ${DEPS}
+rm -rf ${TARGET}
 mkdir ${TARGET}
 
 # Default optimisation level is for binary size (-Os)
@@ -107,7 +109,7 @@ VERSION_PROXY_LIBINTL=0.4
 VERSION_GDKPIXBUF=2.42.10
 VERSION_FREETYPE=2.13.1
 VERSION_EXPAT=2.5.0
-VERSION_ARCHIVE=3.7.0
+VERSION_ARCHIVE=3.7.1
 VERSION_FONTCONFIG=2.14.2
 VERSION_HARFBUZZ=8.0.1
 VERSION_PIXMAN=0.42.2
@@ -118,6 +120,8 @@ VERSION_RSVG=2.56.90
 VERSION_AOM=3.6.1
 VERSION_HEIF=1.16.2
 VERSION_CGIF=0.3.2
+VERSION_PDFIUM=5907
+
 
 # Remove patch version component
 without_patch() {
@@ -207,6 +211,28 @@ CFLAGS="${CFLAGS} -O3" cmake -G"Unix Makefiles" \
   -DBUILD_SHARED_LIBS=FALSE -DZLIB_COMPAT=TRUE
 make install/strip
 
+
+mkdir ${DEPS}/pdfium
+echo $(echo "$PLATFORM" | sed -E 's/musl/-musl/g; s/v[6-8]//g; s/darwin/mac/g')
+echo https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F${VERSION_PDFIUM}/pdfium-$(echo "$PLATFORM" | sed -E 's/musl/-musl/g; s/v[6-8]//g; s/darwin/mac/g').tgz
+$CURL https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F${VERSION_PDFIUM}/pdfium-$(echo "$PLATFORM" | sed -E 's/musl/-musl/g; s/v[6-8]//g; s/darwin/mac/g').tgz | tar xzC ${DEPS}/pdfium
+cd ${DEPS}/pdfium
+
+cat > ${TARGET}/lib/pkgconfig/pdfium.pc << EOF
+prefix=${TARGET}
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/deps/pdfium/lib
+includedir=\${prefix}/deps/pdfium/include
+Name: pdfium
+Description: pdfium
+Version: ${VERSION_PDFIUM}
+Requires:
+Libs: -L\${libdir} -lpdfium
+Cflags: -I\${includedir}
+EOF
+
+
+# Reversed (or previously applied) patch detected!  Assume -R? [y] 
 mkdir ${DEPS}/ffi
 $CURL https://github.com/libffi/libffi/releases/download/v${VERSION_FFI}/libffi-${VERSION_FFI}.tar.gz | tar xzC ${DEPS}/ffi --strip-components=1
 cd ${DEPS}/ffi
@@ -464,7 +490,7 @@ sed -i'.bak' "/subdir('man')/{N;N;N;N;d;}" meson.build
 CFLAGS="${CFLAGS} -O3" CXXFLAGS="${CXXFLAGS} -O3" meson setup _build --default-library=shared --buildtype=release --strip --prefix=${TARGET} ${MESON} \
   -Ddeprecated=false -Dintrospection=false -Dmodules=disabled -Dcfitsio=disabled -Dfftw=disabled -Djpeg-xl=disabled \
   -Dmagick=disabled -Dmatio=disabled -Dnifti=disabled -Dopenexr=disabled -Dopenjpeg=disabled -Dopenslide=disabled \
-  -Dpdfium=disabled -Dpoppler=disabled -Dquantizr=disabled \
+  -Dpoppler=disabled -Dquantizr=disabled \
   -Dppm=false -Danalyze=false -Dradiance=false \
   ${LINUX:+-Dcpp_link_args="$LDFLAGS -Wl,-Bsymbolic-functions -Wl,--version-script=$DEPS/vips/vips.map $EXCLUDE_LIBS"}
 meson install -C _build --tag runtime,devel
