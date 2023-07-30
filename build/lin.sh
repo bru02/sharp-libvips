@@ -218,13 +218,13 @@ echo https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F$
 $CURL https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F${VERSION_PDFIUM}/pdfium-$(echo "$PLATFORM" | sed -E 's/musl/-musl/g; s/v[6-8]//g; s/darwin/mac/g').tgz | tar xzC ${DEPS}/pdfium
 cd ${DEPS}/pdfium
 
-
 mkdir -p ${TARGET}/lib/pkgconfig
+ls -l ${TARGET}/lib/pkgconfig
 cat > ${TARGET}/lib/pkgconfig/pdfium.pc << EOF
 prefix=${TARGET}
 exec_prefix=\${prefix}
-libdir=\${exec_prefix}/deps/pdfium/lib
-includedir=\${prefix}/deps/pdfium/include
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
 Name: pdfium
 Description: pdfium
 Version: ${VERSION_PDFIUM}
