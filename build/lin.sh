@@ -218,6 +218,8 @@ echo https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F$
 $CURL https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F${VERSION_PDFIUM}/pdfium-$(echo "$PLATFORM" | sed -E 's/musl/-musl/g; s/v[6-8]//g; s/darwin/mac/g').tgz | tar xzC ${DEPS}/pdfium
 cd ${DEPS}/pdfium
 
+
+mkdir -p ${TARGET}/lib/pkgconfig
 cat > ${TARGET}/lib/pkgconfig/pdfium.pc << EOF
 prefix=${TARGET}
 exec_prefix=\${prefix}
@@ -382,8 +384,7 @@ make install-strip
 mkdir ${DEPS}/archive
 $CURL https://github.com/libarchive/libarchive/releases/download/v${VERSION_ARCHIVE}/libarchive-${VERSION_ARCHIVE}.tar.xz | tar xJC ${DEPS}/archive --strip-components=1
 cd ${DEPS}/archive
-# Replace svfs.f_namelen with svfs.f_namemax (remove when version > 3.7.0)
-$CURL https://github.com/libarchive/libarchive/commit/bd074c2531e867078788fe8539376c31119e4e55.patch | patch -p1
+
 ./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking \
   --disable-bsdtar --disable-bsdcat --disable-bsdcpio --disable-bsdunzip --disable-posix-regex-lib --disable-xattr --disable-acl \
   --without-bz2lib --without-libb2 --without-iconv --without-lz4 --without-zstd --without-lzma \
