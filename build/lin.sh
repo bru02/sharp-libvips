@@ -510,11 +510,11 @@ function copydeps {
   elif [ "$DARWIN" = true ]; then
     echo "DEPS"
     pwd
-    otool -LX "$base"
-    otool -LX "$base" | awk '{cmd = "realpath " $1 " 2>/dev/null"; if ((cmd | getline path) > 0) print path; else print $1; close(cmd)}'
+    otool -LXt "$base"
+    otool -LXt "$base" | awk '{cmd = "realpath " $1 " 2>/dev/null"; if ((cmd | getline path) > 0) print path; else print $1; close(cmd)}'
     echo "DEPS"
-    otool -LX "$base" | awk '{cmd = "realpath " $1 " 2>/dev/null"; if ((cmd | getline path) > 0) print path; else print $1; close(cmd)}' | grep $TARGET
-    local dependencies=$(otool -LX "$base" | awk '{cmd = "realpath " $1 " 2>/dev/null"; if ((cmd | getline path) > 0) print path; else print $1; close(cmd)}' | grep $TARGET)
+    otool -LXt "$base" | awk '{cmd = "realpath " $1 " 2>/dev/null"; if ((cmd | getline path) > 0) print path; else print $1; close(cmd)}' | grep $TARGET
+    local dependencies=$(otool -LXt "$base" | awk '{cmd = "realpath " $1 " 2>/dev/null"; if ((cmd | getline path) > 0) print path; else print $1; close(cmd)}' | grep $TARGET)
 
     install_name_tool -id @rpath/$base $dest_dir/$base
   fi
