@@ -508,7 +508,7 @@ function copydeps {
   if [ "$LINUX" = true ]; then
     local dependencies=$(readelf -d $base | grep NEEDED | awk '{ print $5 }' | tr -d '[]')
   elif [ "$DARWIN" = true ]; then
-    local dependencies=$(otool -LX $base | awk '{print $1}' | grep $TARGET)
+    local dependencies=$(otool -LX "$base" | awk '{cmd = "realpath " $1 " 2>/dev/null"; if ((cmd | getline path) > 0) print path; else print $1; close(cmd)}' | grep $TARGET)
 
     install_name_tool -id @rpath/$base $dest_dir/$base
   fi
