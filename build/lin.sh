@@ -21,9 +21,7 @@ case ${PLATFORM} in
     ;;
 esac
 
-rm -rf ${DEPS}
 mkdir ${DEPS}
-rm -rf ${TARGET}
 mkdir ${TARGET}
 
 # Default optimisation level is for binary size (-Os)
@@ -122,7 +120,6 @@ VERSION_HEIF=1.16.2
 VERSION_CGIF=0.3.2
 VERSION_PDFIUM=5921
 
-
 # Remove patch version component
 without_patch() {
   echo "${1%.[[:digit:]]*}"
@@ -182,7 +179,6 @@ version_latest "aom" "$VERSION_AOM" "17628"
 version_latest "heif" "$VERSION_HEIF" "strukturag/libheif"
 version_latest "cgif" "$VERSION_CGIF" "dloebl/cgif"
 version_latest "pdfium" "$VERSION_PDFIUM" "bblanchon/pdfium-binaries"
-
 if [ "$ALL_AT_VERSION_LATEST" = "false" ]; then exit 1; fi
 
 # Download and build dependencies from source
@@ -213,11 +209,6 @@ CFLAGS="${CFLAGS} -O3" cmake -G"Unix Makefiles" \
   -DBUILD_SHARED_LIBS=FALSE -DZLIB_COMPAT=TRUE
 make install/strip
 
-
-
-
-
-# Reversed (or previously applied) patch detected!  Assume -R? [y] 
 mkdir ${DEPS}/ffi
 $CURL https://github.com/libffi/libffi/releases/download/v${VERSION_FFI}/libffi-${VERSION_FFI}.tar.gz | tar xzC ${DEPS}/ffi --strip-components=1
 cd ${DEPS}/ffi
@@ -367,7 +358,6 @@ make install-strip
 mkdir ${DEPS}/archive
 $CURL https://github.com/libarchive/libarchive/releases/download/v${VERSION_ARCHIVE}/libarchive-${VERSION_ARCHIVE}.tar.xz | tar xJC ${DEPS}/archive --strip-components=1
 cd ${DEPS}/archive
-
 ./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking \
   --disable-bsdtar --disable-bsdcat --disable-bsdcpio --disable-bsdunzip --disable-posix-regex-lib --disable-xattr --disable-acl \
   --without-bz2lib --without-libb2 --without-iconv --without-lz4 --without-zstd --without-lzma \
@@ -450,7 +440,6 @@ meson install -C _build --tag devel
 
 mkdir ${DEPS}/pdfium
 echo $(echo "$PLATFORM" | sed -E 's/musl/-musl/g; s/v[6-8]//g; s/darwin/mac/g')
-echo https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F${VERSION_PDFIUM}/pdfium-$(echo "$PLATFORM" | sed -E 's/musl/-musl/g; s/v[6-8]//g; s/darwin/mac/g').tgz
 $CURL https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F${VERSION_PDFIUM}/pdfium-$(echo "$PLATFORM" | sed -E 's/musl/-musl/g; s/v[6-8]//g; s/darwin/mac/g').tgz | tar xzC ${TARGET}
 cd ${DEPS}/pdfium
 
