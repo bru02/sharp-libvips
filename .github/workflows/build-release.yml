@@ -2,6 +2,7 @@ name: Build Release
 on: [ push, pull_request ]
 jobs:
   create-release:
+    permissions: write-all
     runs-on: 'ubuntu-22.04'
     outputs:
       upload_url: ${{ steps.create-release.outputs.upload_url }}
@@ -15,6 +16,7 @@ jobs:
           prerelease: true
           token: ${{ secrets.GITHUB_TOKEN }}
   build:
+    permissions: write-all
     runs-on: ${{ matrix.os }}
     needs: create-release
     strategy:
