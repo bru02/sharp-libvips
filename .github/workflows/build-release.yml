@@ -25,7 +25,6 @@ jobs:
           - 'linux-x64'
           - 'linux-armv6'
           - 'linux-armv7'
-          - 'linuxmusl-x64'
         include:
           - os: macos-11
             platform: 'darwin-x64'
