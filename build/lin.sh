@@ -481,7 +481,7 @@ elif [ "$DARWIN" = true ]; then
 fi
 # Disable building man pages, gettext po files, tools, and (fuzz-)tests
 sed -i'.bak' "/subdir('man')/{N;N;N;N;d;}" meson.build
-CFLAGS="${CFLAGS} -O3" CXXFLAGS="${CXXFLAGS} -O3" meson setup _build --default-library=shared --buildtype=release --prefer-static --strip --prefix=${TARGET} ${MESON} \
+CFLAGS="${CFLAGS} -O3 -fPIC" CXXFLAGS="${CXXFLAGS} -O3" meson setup _build --default-library=shared --buildtype=release --prefer-static --strip --prefix=${TARGET} ${MESON} \
   -Ddeprecated=false -Dintrospection=false -Dmodules=disabled -Dcfitsio=disabled -Dfftw=disabled -Djpeg-xl=disabled \
   -Dmagick=disabled -Dmatio=disabled -Dnifti=disabled -Dopenexr=disabled -Dopenjpeg=disabled -Dopenslide=disabled \
   -Dpoppler=disabled -Dquantizr=disabled \
@@ -508,6 +508,9 @@ function copydeps {
   if [ "$LINUX" = true ]; then
     local dependencies=$(readelf -d $base | grep NEEDED | awk '{ print $5 }' | tr -d '[]')
   elif [ "$DARWIN" = true ]; then
+    echo "DEPS"
+    otool -LX "$base"
+    otool -LX "$base" | awk '{cmd = "realpath " $1 " 2>/dev/null"; if ((cmd | getline path) > 0) print path; else print $1; close(cmd)}'
     local dependencies=$(otool -LX "$base" | awk '{cmd = "realpath " $1 " 2>/dev/null"; if ((cmd | getline path) > 0) print path; else print $1; close(cmd)}' | grep $TARGET)
 
     install_name_tool -id @rpath/$base $dest_dir/$base
