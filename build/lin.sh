@@ -119,20 +119,7 @@ VERSION_AOM=3.6.1
 VERSION_HEIF=1.16.2
 VERSION_CGIF=0.3.2
 VERSION_PDFIUM=5921
-mkdir -p ${TARGET}/lib/pkgconfig
-ls -l ${TARGET}/lib/pkgconfig
-cat > ${TARGET}/lib/pkgconfig/pdfium.pc << EOF
-prefix=${TARGET}
-exec_prefix=\${prefix}
-libdir=\${exec_prefix}/lib
-includedir=\${prefix}/include
-Name: pdfium
-Description: pdfium
-Version: ${VERSION_PDFIUM}
-Requires:
-Libs: -L\${libdir} -lpdfium
-Cflags: -I\${includedir}
-EOF
+
 # Remove patch version component
 without_patch() {
   echo "${1%.[[:digit:]]*}"
@@ -452,7 +439,6 @@ CFLAGS="${CFLAGS} -O3" meson setup _build --default-library=static --buildtype=r
 meson install -C _build --tag devel
 
 mkdir ${DEPS}/pdfium
-echo $(echo "$PLATFORM" | sed -E 's/musl/-musl/g; s/v[6-8]//g; s/darwin/mac/g')
 $CURL https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F${VERSION_PDFIUM}/pdfium-$(echo "$PLATFORM" | sed -E 's/musl/-musl/g; s/v[6-8]//g; s/darwin/mac/g').tgz | tar xzC ${TARGET}
 cd ${DEPS}/pdfium
 
@@ -521,7 +507,7 @@ function copydeps {
   if [ "$LINUX" = true ]; then
     local dependencies=$(readelf -d $base | grep NEEDED | awk '{ print $5 }' | tr -d '[]')
   elif [ "$DARWIN" = true ]; then
-    local dependencies=$(otool -LXt "$base" | awk '{print $1}' | grep -E "\./|$(echo $TARGET)")
+    local dependencies=$(otool -LX "$base" | awk '{print $1}' | grep -E "\./|$(echo $TARGET)")
 
     install_name_tool -id @rpath/$base $dest_dir/$base
   fi
